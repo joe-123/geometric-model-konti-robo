@@ -1,15 +1,5 @@
 function[robotShape] = GeometricModel(TACR,q)
-%% GeometricModel.m
-% This function computes the space curve of a tendon actuated continuum
-% robot with 2 segments and utilizes a geometric forward kinematics model
-%
-% Copyright: 2016 Leibniz Universitï¿½t Hannover, All rights reserved
-%
-% Email: continuumrobotics@lkr.uni-hannover.de
-%
-% Version: 1
-% Date: 11/16/2016
-%
+
 % input: struct TACR, q:[jx3] configurational parameters
 %
 % output: robotShape.diskPoints: n rows for n disks, 12 columns for coordinates
@@ -21,13 +11,13 @@ function[robotShape] = GeometricModel(TACR,q)
 %         columns 7-9 are matrix elements (3,1; 3,2; 3,3),
 
 
-% Die vorligende Funktion ist für eine beliebige Anzahl an Segmenten
+% Die vorligende Funktion ist fÃ¼r eine beliebige Anzahl an Segmenten
 % lauffaehig. Sonderfaelle treten nur beim ersten Segment auf, da dieses
 % keine Anbindung aufweist. 
 % Gruppe: Anton Sauer, Johannes Schulz
 %%  
     % Ueberpruefung der Eingabe
-    if abs(sum(q(:))) > 0.000001 % da double-Werte wird mit Minimum überprüft
+    if abs(sum(q(:))) > 0.000001 % da double-Werte wird mit Minimum Ã¼berprÃ¼ft
         disp('Achtung: Summe der Seillaengen ist nicht Null!');
     end
     
@@ -51,15 +41,15 @@ function[robotShape] = GeometricModel(TACR,q)
     % Schleife Ueber die Segmente
     for j=1:number_of_segments
         phi = -atan2(-q(j,1)*cos(beta)+q(j,2), -q(j,1)*sin(beta)); % Da phi negativ laeuft wird Vorzeichen umgedreht
-        phi_total = phi_total+phi; % phi wird aufsummiert um delta und Rückdrehung der Scheiben berechnen zu können
+        phi_total = phi_total+phi; % phi wird aufsummiert um delta und RÃ¼ckdrehung der Scheiben berechnen zu kÃ¶nnen
         
         % Berechnung des Grund-Punktes fuer das Segment der 3 Tendons
         for i=1:3
             w = (i*2*pi)/number_of_tendons; % Winkelschrittgroesse aus Tendonanzahl
-            p_tendon(:,i) = [TACR.diskPitchRadius(j)*cos(w); TACR.diskPitchRadius(j)*sin(w); 0]; % Punkt der Tendons für z=0 aus Winkel(w) berechnen
+            p_tendon(:,i) = [TACR.diskPitchRadius(j)*cos(w); TACR.diskPitchRadius(j)*sin(w); 0]; % Punkt der Tendons fÃ¼r z=0 aus Winkel(w) berechnen
         end
         delta = TACR.diskPitchRadius(j) * cos(phi_total); % delta in Abhaengigkeit zur gesamten Verdrehung um die z-Achse
-        % Rotationsmatrix fuer Drehung um phi ist für Segment fest
+        % Rotationsmatrix fuer Drehung um phi ist fÃ¼r Segment fest
         Rot_z = [cos(phi)    -sin(phi)    0;
                  sin(phi)     cos(phi)    0;
                     0           0         1];
@@ -71,16 +61,16 @@ function[robotShape] = GeometricModel(TACR,q)
         else
             s_num = TACR.ndisks(j)+1;
         end
-        % Schleife ueber die jeweils auftretenden Abstaende(bei j>1 um eins großer)
+        % Schleife ueber die jeweils auftretenden Abstaende(bei j>1 um eins groÃŸer)
         for s = 1:s_num
             % Drahtlaenge zur aktuellen Scheibe (s-1, da erste Scheibe auf dem boden liegen soll)
             q_s = (q(j,1)/10)*(s-1);
             % Winkel der Scheibe
             theta = theta_old + q_s(1)/delta;
-            % Radian für Scheibe berechnen, wenn j=1 sind die Abstaende, welche
+            % Radian fÃ¼r Scheibe berechnen, wenn j=1 sind die Abstaende, welche
             % aus Segementlaenge resultieren nicht auch auf die Verbindung
             % zum Vorgangssegment verteilt. Beim Endstueck wird die dicke
-            % des Endstückes abgezogen um die Segmentlaenge zu erzeugen wenn
+            % des EndstÃ¼ckes abgezogen um die Segmentlaenge zu erzeugen wenn
             % die letzte Scheibe verschoben wird. 
             switch j
                 case 1
@@ -93,7 +83,7 @@ function[robotShape] = GeometricModel(TACR,q)
             alpha = theta_old - theta;
             % Wenn die Werte fuer q1/2/3=0 wird alpha 0 und somit r zu Inf
             % bei den Position treten folgend nur noch NaN-Werte auf
-            if abs(alpha) < 0.0000001 % double-Wert, also wird über Minimum überprüft
+            if abs(alpha) < 0.0000001 % double-Wert, also wird Ã¼ber Minimum Ã¼berprÃ¼ft
                 diskPointTemp = [0; 0; radian]; % Im spezialfall wird die Bogenlaenge als z-Wert gesetzt, da der Roboter senkrecht verlauft
             else
                 r = radian/alpha;% Radius
@@ -123,7 +113,7 @@ function[robotShape] = GeometricModel(TACR,q)
             if s==1 && j>1  % Sofern Scheiben nummer =1 und Segment groesser als eins ist wird nur die Verbindung zwischen den Segmenten berechnet und wird folglich nicht als Scheibe gespeichert
             else
                 robotShape.diskRotation(speicher,1:9) = [Rot_Scheibe(1,:) Rot_Scheibe(2,:) Rot_Scheibe(3,:)];% Rotation Speichern
-                % Da Endscheibe dicker, wird dies überprueft und wenn die
+                % Da Endscheibe dicker, wird dies Ã¼berprueft und wenn die
                 % Endscheibe berechnet wird wird der Dickeunterschied von
                 % 7.3-3 = 4.3 aufaddiert.
                 if (j == number_of_segments && s == TACR.ndisks(j)+1) ||(j == 1 && s == TACR.ndisks(j) && number_of_segments==1 )
